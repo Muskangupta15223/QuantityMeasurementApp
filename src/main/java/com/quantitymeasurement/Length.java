@@ -4,8 +4,8 @@ import java.util.Objects;
 
 public class Length {
 
-	private double value;
-	private LengthUnit unit;
+	private final double value;
+	private final LengthUnit unit;
 	
 	public enum LengthUnit{
 		Feet(12.0),
@@ -34,8 +34,7 @@ public class Length {
 		 if (thatLength == null) {
 	            return false;
 	        }
-	        return Double.compare(this.convertToBaseUnit(),
-	                              thatLength.convertToBaseUnit()) == 0;
+	        return this.equals(thatLength);
 	    }
 	
 	public boolean equals(Object obj) {
