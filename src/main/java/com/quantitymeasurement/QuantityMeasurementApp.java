@@ -53,6 +53,12 @@ public class QuantityMeasurementApp {
 		return result;
 	}
 	
+	public static Length demonstrateLengthAddition(Length l1, Length l2, Length.LengthUnit targetUnit) {
+		Length result = l1.add(l2, targetUnit);
+		System.out.println("Addition : " + result);
+		return result;
+	}
+	
 	public static void main(String[] args) {
 		demonstrateFeetEquality();
 		demonstrateInchesEquality();
@@ -78,5 +84,7 @@ public class QuantityMeasurementApp {
 		demonstrateLengthAddition(new Length(1.0, Length.LengthUnit.Feet), new Length(12.0, Length.LengthUnit.Inches));
 		demonstrateLengthAddition(new Length(1.0, Length.LengthUnit.Yards), new Length(3.0, Length.LengthUnit.Feet));
 		demonstrateLengthAddition(new Length(2.54, Length.LengthUnit.Centimeters),new Length(1.0, Length.LengthUnit.Inches));
+		
+		demonstrateLengthAddition(new Length(1.0, Length.LengthUnit.Feet), new Length(12.0, Length.LengthUnit.Inches), Length.LengthUnit.Yards);
 	}
 }
