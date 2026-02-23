@@ -3,127 +3,113 @@ package com.quantitymeasurement;
 import java.util.Objects;
 
 public class Length {
+	 private static final double EPSILON = 1e-6;
 
-	private final double value;
-	private final LengthUnit unit;
-	
-	public enum LengthUnit{
-		Feet(12.0),
-		Inches(1.0),
-		Yards(36.0),
-		Centimeters(0.393701);
-		
-		private final double conversionFactor;
-		LengthUnit(double conversionFactor){
-			this.conversionFactor = conversionFactor;
-		}
-		public double getConversionFactor() {
-			return conversionFactor;
-		}
-	}
-	
-	public Length(double value, LengthUnit unit) {
-		 if (unit == null) {
-		        throw new NullPointerException("Unit cannot be null");
-		    }
-		 if(Double.isNaN(value) || Double.isInfinite(value)) {
-			 throw new IllegalArgumentException("Invalid numeric value");
-		 }
-		this.value = value;
-		this.unit = unit;
-	}
-	public double convertToBaseUnit() {
-		double valueInInches = value * unit.getConversionFactor();
-		return Math.round(valueInInches * 100.0) / 100.0;
-	}
-	public Length convertTo(LengthUnit targetUnit) {
-		if (targetUnit == null) {
-			throw new IllegalArgumentException("Target unit must not be null");
-		}
+	    private final double value;
+	    private final LengthUnit unit;
 
-		double valueInInches = this.convertToBaseUnit();
-		double convertedValue = valueInInches / targetUnit.getConversionFactor();
-		double roundedValue = Math.round(convertedValue * 100.0) / 100.0;
+	    public Length(double value, LengthUnit unit) {
 
-		return new Length(roundedValue, targetUnit);
-	}
-
-	public static double convert(double value, LengthUnit source, LengthUnit target) {
-
-		if (!Double.isFinite(value)) {
-			throw new IllegalArgumentException("Value must be a finite number");
-		}
-
-		if (source == null || target == null) {
-			throw new IllegalArgumentException("Source and target units must not be null");
-		}
-
-		double valueInInches = value * source.getConversionFactor();
-		double result = valueInInches / target.getConversionFactor();
-
-		return result;
-	}
-
-	private double convertFromBaseToTargetUnit(double lengthInInches, LengthUnit targetUnit) {
-	    return lengthInInches / targetUnit.getConversionFactor();
-	} 
-	
-	public Length add(Length thatLength) {
-		if (thatLength == null) {
-			throw new IllegalArgumentException("Length to add must not be null");
-		}
-		double thisInches = this.convertToBaseUnit();
-		double thatInches = thatLength.convertToBaseUnit();
-		double sumInches = thisInches + thatInches;
-		double resultValue = convertFromBaseToTargetUnit(sumInches, this.unit);
-		return new Length(resultValue, this.unit);
-	}
-	
-	public Length add(Length other, LengthUnit targetUnit) {
-		if (other == null) {
-			throw new IllegalArgumentException("length cannot be null");
-		}
-
-		if (targetUnit == null) {
-			throw new IllegalArgumentException("target unit not be null");
-		}
-
-		if (!Double.isFinite(this.value) || !Double.isFinite(other.value)) {
-			throw new IllegalArgumentException("finite value only");
-		}
-		double thisInches = this.convertToBaseUnit();
-		double otherInches = other.convertToBaseUnit();
-		double sumInches = thisInches + otherInches;
-		double resultValue = sumInches / targetUnit.getConversionFactor();
-		return new Length(resultValue, targetUnit);
-	}
-
-	public boolean compare(Length thatLength) {
-		 if (thatLength == null) {
-	            return false;
+	        if (!Double.isFinite(value)) {
+	            throw new IllegalArgumentException("Value must be finite");
 	        }
-	        return this.equals(thatLength);
+
+	        if (unit == null) {
+	            throw new NullPointerException("Unit cannot be null");
+	        }
+
+	        this.value = value;
+	        this.unit = unit;
 	    }
-	
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj == null) {
-			return false;
-		}
-		if(getClass() != obj.getClass()) {
-			return false;
-		}
-		Length other = (Length)obj;
-		return Double.compare(this.convertToBaseUnit(), other.convertToBaseUnit())==0;
+
+	    private double toBaseUnit() {
+	        return unit.convertToBaseUnit(value);
+	    }
+
+	    public static double convert(double value, LengthUnit source, LengthUnit target) {
+
+	        if (!Double.isFinite(value)) {
+	            throw new IllegalArgumentException("Value must be finite");
+	        }
+
+	        if (source == null || target == null) {
+	            throw new IllegalArgumentException("Unit cannot be null");
+	        }
+
+	        double baseValue = source.convertToBaseUnit(value);
+
+	        return target.convertFromBaseUnit(baseValue);
+	    }
+	    public Length convertTo(LengthUnit targetUnit) {
+
+	        if (targetUnit == null)
+	            throw new IllegalArgumentException("Target unit cannot be null");
+
+	        double base = unit.convertToBaseUnit(value);
+	        double resultValue = targetUnit.convertFromBaseUnit(base);
+
+	        return new Length(resultValue, targetUnit);
+	    }
+
+	    public Length add(Length other) {
+
+	        if (other == null) {
+	            throw new IllegalArgumentException("Length cannot be null");
+	        }
+
+	        return add(other, this.unit);
+	    }
+
+	    public Length add(Length other, LengthUnit targetUnit) {
+
+	        if (other == null) {
+	            throw new IllegalArgumentException("Length cannot be null");
+	        }
+
+	        if (targetUnit == null) {
+	            throw new IllegalArgumentException("Target unit cannot be null");
+	        }
+
+	        double base1 = this.unit.convertToBaseUnit(this.value);
+	        double base2 = other.unit.convertToBaseUnit(other.value);
+
+	        double sumBase = base1 + base2;
+
+	        double resultValue = targetUnit.convertFromBaseUnit(sumBase);
+
+	        return new Length(resultValue, targetUnit);
+	    }
+		public boolean compare(Length thatLength) {
+			 if (thatLength == null) {
+		            return false;
+		        }
+		        return this.equals(thatLength);
+		    }
+	    @Override
+	    public boolean equals(Object obj) {
+
+	        if (this == obj)
+	            return true;
+
+	        if (!(obj instanceof Length))
+	            return false;
+
+	        Length other = (Length) obj;
+
+	        double base1 = this.unit.convertToBaseUnit(this.value);
+	        double base2 = other.unit.convertToBaseUnit(other.value);
+
+	        return Math.abs(base1 - base2) <= EPSILON;
+	    }
+
+	    @Override
+	    public int hashCode() {
+	        long normalized = Math.round(toBaseUnit() / EPSILON);
+	        return Objects.hash(normalized);
+	    }
+
+	    @Override
+	    public String toString() {
+	        return String.format("%.2f %s", value, unit);
+	    }
 	}
-	@Override
-	public int hashCode() {
-		return Objects.hash(convertToBaseUnit());
-	}
-	@Override
-	public String toString() {
-		return String.format("%.2f %s", value, unit);
-	}
-}
