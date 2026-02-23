@@ -17,8 +17,8 @@ public class Length {
 		LengthUnit(double conversionFactor){
 			this.conversionFactor = conversionFactor;
 		}
-		public double toBaseUnit(double value) {
-			return conversionFactor * value;
+		public double getConversionFactor() {
+			return conversionFactor;
 		}
 	}
 	
@@ -33,7 +33,35 @@ public class Length {
 		this.unit = unit;
 	}
 	public double convertToBaseUnit() {
-		return unit.toBaseUnit(value);
+		double valueInInches = value * unit.getConversionFactor();
+		return Math.round(valueInInches * 100.0) / 100.0;
+	}
+	public Length convertTo(LengthUnit targetUnit) {
+		if (targetUnit == null) {
+			throw new IllegalArgumentException("Target unit must not be null");
+		}
+
+		double valueInInches = this.convertToBaseUnit();
+		double convertedValue = valueInInches / targetUnit.getConversionFactor();
+		double roundedValue = Math.round(convertedValue * 100.0) / 100.0;
+
+		return new Length(roundedValue, targetUnit);
+	}
+
+	public static double convert(double value, LengthUnit source, LengthUnit target) {
+
+		if (!Double.isFinite(value)) {
+			throw new IllegalArgumentException("Value must be a finite number");
+		}
+
+		if (source == null || target == null) {
+			throw new IllegalArgumentException("Source and target units must not be null");
+		}
+
+		double valueInInches = value * source.getConversionFactor();
+		double result = valueInInches / target.getConversionFactor();
+
+		return Math.round(result * 100.0) / 100.0;
 	}
 	public boolean compare(Length thatLength) {
 		 if (thatLength == null) {
@@ -58,5 +86,9 @@ public class Length {
 	@Override
 	public int hashCode() {
 		return Objects.hash(convertToBaseUnit());
+	}
+	@Override
+	public String toString() {
+		return String.format("%.2f %s", value, unit);
 	}
 }
