@@ -58,7 +58,48 @@ public class QuantityMeasurementApp {
 		System.out.println("Addition : " + result);
 		return result;
 	}
-	
+	public static boolean demonstrateWeightEquality(Weight w1, Weight w2) {
+		return w1.equals(w2);
+	}
+
+	public static boolean demonstrateWeightComparison(double value1, WeightUnit unit1, double value2,
+			WeightUnit unit2) {
+
+		Weight w1 = new Weight(value1, unit1);
+		Weight w2 = new Weight(value2, unit2);
+
+		boolean result = w1.equals(w2);
+
+		System.out.println("weights are equal : " + result);
+		return result;
+	}
+
+	public static double demonstrateWeightConversion(double value, WeightUnit from, WeightUnit to) {
+
+		double result = Weight.convert(value, from, to);
+
+		System.out.println(value + " " + from + " = " + result + " " + to);
+
+		return result;
+	}
+
+	public static Weight demonstrateWeightAddition(Weight w1, Weight w2) {
+
+		Weight result = w1.add(w2);
+
+		System.out.println("Addition : " + result);
+
+		return result;
+	}
+
+	public static Weight demonstrateWeightAddition(Weight w1, Weight w2, WeightUnit targetUnit) {
+
+		Weight result = w1.add(w2, targetUnit);
+
+		System.out.println("Addition : " + result);
+
+		return result;
+	}
 	public static void main(String[] args) {
 		demonstrateFeetEquality();
 		demonstrateInchesEquality();
@@ -85,5 +126,22 @@ public class QuantityMeasurementApp {
 		demonstrateLengthAddition(new Length(2.54, LengthUnit.Centimeters),new Length(1.0, LengthUnit.Inches));
 		
 		demonstrateLengthAddition(new Length(1.0, LengthUnit.Feet), new Length(12.0, LengthUnit.Inches), LengthUnit.Yards);
+		System.out.println();
+
+		demonstrateWeightComparison(1.0, WeightUnit.KILOGRAM, 1000.0, WeightUnit.GRAM);
+
+		demonstrateWeightComparison(1.0, WeightUnit.KILOGRAM, 2.20462, WeightUnit.POUND);
+
+		demonstrateWeightComparison(500.0, WeightUnit.GRAM, 0.5, WeightUnit.KILOGRAM);
+
+		demonstrateWeightConversion(1.0, WeightUnit.KILOGRAM, WeightUnit.GRAM);
+
+		demonstrateWeightConversion(2.0, WeightUnit.POUND, WeightUnit.KILOGRAM);
+
+		demonstrateWeightConversion(500.0, WeightUnit.GRAM, WeightUnit.POUND);
+
+		demonstrateWeightAddition(new Weight(1.0, WeightUnit.KILOGRAM), new Weight(2.0, WeightUnit.KILOGRAM));
+
+		demonstrateWeightAddition(new Weight(1.0, WeightUnit.KILOGRAM), new Weight(1000.0, WeightUnit.GRAM), WeightUnit.GRAM);
 	}
 }
