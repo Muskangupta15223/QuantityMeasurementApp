@@ -27,3 +27,17 @@
 - equals() is overridden correctly
 - Double.compare() is used instead of ==
 - Handles null, type mismatch, and same reference cases safely
+- =======
+## Quantity Measurement App – UC2 (Generic Length Equality)
+*📌 Overview*
+- This module checks whether two measurements given in inches and feets are equal.
+### ⚙️ Use Case: UC3 – Generic Quantity Length 
+- Accepts two numerical values along with their respective unit types
+- Converts different units to a common base unit
+- logic is centralized and reusable
+- Measurement value and unit are encapsulated
+- Handles:
+   - null values
+   - invalid units
+   - same reference checks
+   - type mismatch safely
