@@ -13,7 +13,7 @@
    - Double.compare() is used instead of ==
    - Handles null, type mismatch, and same reference cases safely#QunatityMeasurement
 
-==========
+--------------------
 
 ## Quantity Measurement App – UC2 (Inches Equality)
 *📌 Overview*
@@ -30,8 +30,7 @@
 - Double.compare() is used instead of ==
 - Handles null, type mismatch, and same reference cases safely
 
-=======
-
+-----------------------
 ## Quantity Measurement App – UC3 (Generic Length Equality)
 *📌 Overview*
 - This module checks whether two measurements given in inches and feets are equal.
@@ -46,7 +45,7 @@
    - same reference checks
    - type mismatch safely
 
-===========
+------------------------------
 
 ## Quantity Measurement App – UC4 (Yard Equality)
 *📌 Overview*
@@ -61,7 +60,7 @@
    - invalid units
    - conversion checks
    - type casting checks
-============
+----------------------------
 
 ## Quantity Measurement App – UC5 (Unit-to-Unit Conversion)
 *📌 Overview*
@@ -87,7 +86,7 @@
    - Conversion preserves mathematical accuracy within floating-point tolerance
    - No mutation of existing objects; conversions return new values or instances
 
-============
+-------------------------------
 
 ## Quantity Measurement App – UC6 (Unit-Addition Conversion)
 *📌 Overview*
@@ -105,7 +104,7 @@
 - Commutativity and identity element behaviour.
 - Robust validation for null or invalid inputs.
 
-===========
+-----------------------------
 
 ## Quantity Measurement App – UC7 (Addition with Target Unit Specification)
 📌 Overview
@@ -125,7 +124,7 @@
 - Preserves immutability, precision, and commutativity.
 - Maintains backward compatibility with the UC6 addition.
 
-========
+--------------------------------
 ## Quantity Measurement App – UC8 (Standalone LengthUnit Refactoring)
 *📌 Overview*
 - This module refactors the LengthUnit enum to a standalone, top-level class with full responsibility for unit conversions.
@@ -173,7 +172,7 @@
 - Supports equality comparison, unit conversion, and addition
 - Prevents invalid cross-category comparisons (e.g., length vs. weight)
 - Returns a new Quantity object for conversion or addition; equality returns a boolean
- ### ⚙️ Key Implementation Points
+### ⚙️ Key Implementation Points
 - Uses a single generic class: Quantity<U extends IMeasurable>
 - Holds private final fields: value and unit (immutable)
 - IMeasurable interface standardises unit behaviour across categories
@@ -181,6 +180,17 @@
 - equals() compares base unit values using Double.compare() and validates unit types
 - convertTo(U targetUnit) delegates to the unit’s conversion methods and returns new instance
 - add(Quantity<U> other) and add(Quantity<U> other, U targetUnit) perform arithmetic safely
-- hashCode() and toString() overridden for collections and readable output
-- Type safety ensured at compile-time via generics; runtime unit class checks prevent cross-category errors
-- Demonstration methods in QuantityMeasurementApp are generic and unified for all categories
+-----------------------------
+## ⚙️ Use Case: UC11 – Volume Measurement Equality, Conversion, and Addition
+- Accepts numerical values with their respective volume units (LITRE, MILLILITRE, GALLON)
+- Compares volumes for equality
+- Converts between volume units
+- Adds two volume quantities, optionally specifying a target unit
+### ⚙️ Key Implementation Points
+- VolumeUnit enum implements IMeasurable with LITRE as the base unit
+- Conversion factors: MILLILITRE = 0.001 L, GALLON ≈ 3.78541 L
+- Equality uses base unit comparison with epsilon tolerance
+- Generic Quantity<U> handles conversion and addition without modification
+- Maintains type safety: volume cannot be mixed with length or weight
+- Objects are immutable; addition and conversion return new instances
+
