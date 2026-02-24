@@ -194,3 +194,29 @@
 - Maintains type safety: volume cannot be mixed with length or weight
 - Objects are immutable; addition and conversion return new instances
 
+### UC12: Subtraction and Division - Expanding Arithmetic Operations
+### What we did:
+- Implemented subtract() method with same/explicit target unit
+- Implemented divide() method returning ratio
+- Added comprehensive validation for all arithmetic operations
+- Centralized validation logic to avoid duplication
+### What we learned:
+- Consistent API design: Subtraction mirrors addition's dual-method pattern
+- Division semantics: Returns scalar (double), not Quantity
+- Validation patterns: Consistent error handling across operations
+- Edge case handling: Division by zero protection with epsilon comparison
+### Key implementations:
+```
+Subtraction:
+Quantity<LengthUnit> l1 = new Quantity<>(5.0, FEET);
+Quantity<LengthUnit> l2 = new Quantity<>(3.0, FEET);
+Quantity<LengthUnit> diff = l1.subtract(l2); // 2.0 FEET
+
+// With explicit target unit
+Quantity<LengthUnit> diffInches = l1.subtract(l2, INCHES); // 24.0 INCHES
+Division:
+Quantity<LengthUnit> l1 = new Quantity<>(6.0, FEET);
+Quantity<LengthUnit> l2 = new Quantity<>(3.0, FEET);
+double ratio = l1.divide(l2); // 2.0 (dimensionless)
+```
+---------------------------
