@@ -8,10 +8,13 @@ import com.quantitymeasurement.Length;
 import com.quantitymeasurement.LengthUnit;
 import com.quantitymeasurement.Quantity;
 import com.quantitymeasurement.QuantityMeasurementApp;
+import com.quantitymeasurement.VolumeUnit;
 import com.quantitymeasurement.Weight;
 import com.quantitymeasurement.WeightUnit;
 
 public class QuantityMeasurementAppTest {
+
+	private static final double EPSILON = 1e-9;
 
 	@Test
 	public void testEquality_YardToYard_SameValue() {
@@ -889,4 +892,29 @@ public class QuantityMeasurementAppTest {
 		assertEquals(1.0, q1.getValue(), 1e-9);
 		assertEquals(2.0, q2.getValue(), 1e-9);
 	}
-}
+		@Test
+		void testVolumeUnitEnum_LitreConstant() {
+			assertEquals(1.0, VolumeUnit.LITRE.getConversionFactor(), EPSILON);
+		}
+
+		@Test
+		void testVolumeUnitEnum_MillilitreConstant() {
+			assertEquals(0.001, VolumeUnit.MILLILITRE.getConversionFactor(), EPSILON);
+		}
+
+		@Test
+		void testVolumeUnitEnum_GallonConstant() {
+			assertEquals(3.78541, VolumeUnit.GALLON.getConversionFactor(), EPSILON);
+		}
+
+		@Test
+		void testConvertToBaseUnit_MillilitreToLitre() {
+			assertEquals(1.0, VolumeUnit.MILLILITRE.convertToBaseUnit(1000.0), EPSILON);
+		}
+
+		@Test
+		void testConvertFromBaseUnit_LitreToGallon() {
+			assertEquals(1.0, VolumeUnit.GALLON.convertFromBaseUnit(3.78541), EPSILON);
+		}
+
+	}
