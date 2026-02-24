@@ -3,113 +3,99 @@ package com.quantitymeasurement;
 import java.util.Objects;
 
 public class Length {
-	 private static final double EPSILON = 1e-6;
 
-	    private final double value;
-	    private final LengthUnit unit;
+    private static final double EPSILON = 1e-6;
 
-	    public Length(double value, LengthUnit unit) {
+    private final double value;
+    private final LengthUnit unit;
 
-	        if (!Double.isFinite(value)) {
-	            throw new IllegalArgumentException("Value must be finite");
-	        }
+    public Length(double value, LengthUnit unit) {
 
-	        if (unit == null) {
-	            throw new NullPointerException("Unit cannot be null");
-	        }
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Value must be finite");
+        }
 
-	        this.value = value;
-	        this.unit = unit;
-	    }
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
+        }
 
-	    private double toBaseUnit() {
-	        return unit.convertToBaseUnit(value);
-	    }
+        this.value = value;
+        this.unit = unit;
+    }
 
-	    public static double convert(double value, LengthUnit source, LengthUnit target) {
+    private double toBaseUnit() {
+        return unit.convertToBaseUnit(value);
+    }
 
-	        if (!Double.isFinite(value)) {
-	            throw new IllegalArgumentException("Value must be finite");
-	        }
+    public static double convert(double value, LengthUnit source, LengthUnit target) {
 
-	        if (source == null || target == null) {
-	            throw new IllegalArgumentException("Unit cannot be null");
-	        }
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Value must be finite");
+        }
 
-	        double baseValue = source.convertToBaseUnit(value);
+        if (source == null || target == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
+        }
 
-	        return target.convertFromBaseUnit(baseValue);
-	    }
-	    public Length convertTo(LengthUnit targetUnit) {
+        double baseValue = source.convertToBaseUnit(value);
 
-	        if (targetUnit == null)
-	            throw new IllegalArgumentException("Target unit cannot be null");
+        return target.convertFromBaseUnit(baseValue);
+    }
 
-	        double base = unit.convertToBaseUnit(value);
-	        double resultValue = targetUnit.convertFromBaseUnit(base);
+    public Length add(Length other) {
 
-	        return new Length(resultValue, targetUnit);
-	    }
+        if (other == null) {
+            throw new IllegalArgumentException("Length cannot be null");
+        }
 
-	    public Length add(Length other) {
+        return add(other, this.unit);
+    }
 
-	        if (other == null) {
-	            throw new IllegalArgumentException("Length cannot be null");
-	        }
+    public Length add(Length other, LengthUnit targetUnit) {
 
-	        return add(other, this.unit);
-	    }
+        if (other == null) {
+            throw new IllegalArgumentException("Length cannot be null");
+        }
 
-	    public Length add(Length other, LengthUnit targetUnit) {
+        if (targetUnit == null) {
+            throw new IllegalArgumentException("Target unit cannot be null");
+        }
 
-	        if (other == null) {
-	            throw new IllegalArgumentException("Length cannot be null");
-	        }
+        double base1 = this.unit.convertToBaseUnit(this.value);
+        double base2 = other.unit.convertToBaseUnit(other.value);
 
-	        if (targetUnit == null) {
-	            throw new IllegalArgumentException("Target unit cannot be null");
-	        }
+        double sumBase = base1 + base2;
 
-	        double base1 = this.unit.convertToBaseUnit(this.value);
-	        double base2 = other.unit.convertToBaseUnit(other.value);
+        double resultValue = targetUnit.convertFromBaseUnit(sumBase);
 
-	        double sumBase = base1 + base2;
+        return new Length(resultValue, targetUnit);
+    }
 
-	        double resultValue = targetUnit.convertFromBaseUnit(sumBase);
+    @Override
+    public boolean equals(Object obj) {
 
-	        return new Length(resultValue, targetUnit);
-	    }
-		public boolean compare(Length thatLength) {
-			 if (thatLength == null) {
-		            return false;
-		        }
-		        return this.equals(thatLength);
-		    }
-	    @Override
-	    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
 
-	        if (this == obj)
-	            return true;
+        if (!(obj instanceof Length))
+            return false;
 
-	        if (!(obj instanceof Length))
-	            return false;
+        Length other = (Length) obj;
 
-	        Length other = (Length) obj;
+        double base1 = this.unit.convertToBaseUnit(this.value);
+        double base2 = other.unit.convertToBaseUnit(other.value);
 
-	        double base1 = this.unit.convertToBaseUnit(this.value);
-	        double base2 = other.unit.convertToBaseUnit(other.value);
+        return Math.abs(base1 - base2) <= EPSILON;
+    }
 
-	        return Math.abs(base1 - base2) <= EPSILON;
-	    }
+    @Override
+    public int hashCode() {
+        long normalized = Math.round(toBaseUnit() / EPSILON);
+        return Objects.hash(normalized);
+    }
 
-	    @Override
-	    public int hashCode() {
-	        long normalized = Math.round(toBaseUnit() / EPSILON);
-	        return Objects.hash(normalized);
-	    }
-
-	    @Override
-	    public String toString() {
-	        return String.format("%.2f %s", value, unit);
-	    }
-	}
+    @Override
+    public String toString() {
+        return String.format("%.2f %s", value, unit);
+    }
+}
