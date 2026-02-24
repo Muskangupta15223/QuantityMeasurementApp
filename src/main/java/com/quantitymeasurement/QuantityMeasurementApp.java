@@ -6,7 +6,8 @@ public class QuantityMeasurementApp {
 		return q1.equals(q2);
 	}
 
-	public static <U extends IMeasurable> boolean demonstrateComparison(double value1, U unit1, double value2,U unit2) {
+	public static <U extends IMeasurable> boolean demonstrateComparison(double value1, U unit1, double value2,
+			U unit2) {
 
 		Quantity<U> q1 = new Quantity<>(value1, unit1);
 		Quantity<U> q2 = new Quantity<>(value2, unit2);
@@ -44,6 +45,14 @@ public class QuantityMeasurementApp {
 
 		return result;
 	}
+	
+	public static <U extends IMeasurable> void demonstrateConversion(Quantity<U> quantity,U targetUnit) {
+
+	    Quantity<U> converted = quantity.convertTo(targetUnit);
+
+	    System.out.println("Original: " + quantity);
+	    System.out.println("Converted: " + converted);
+	}
 
 	public static void main(String[] args) {
 
@@ -65,7 +74,9 @@ public class QuantityMeasurementApp {
 
 		demonstrateAddition(new Quantity<>(1.0, LengthUnit.FEET), new Quantity<>(12.0, LengthUnit.INCHES));
 
-		demonstrateAddition(new Quantity<>(1.0, LengthUnit.FEET), new Quantity<>(12.0, LengthUnit.INCHES),LengthUnit.YARDS);
+		demonstrateAddition(new Quantity<>(1.0, LengthUnit.FEET), new Quantity<>(12.0, LengthUnit.INCHES),
+				LengthUnit.YARDS);
+
 		demonstrateComparison(1.0, WeightUnit.KILOGRAM, 1000.0, WeightUnit.GRAM);
 
 		demonstrateComparison(1.0, WeightUnit.KILOGRAM, 2.20462, WeightUnit.POUND);
@@ -82,5 +93,15 @@ public class QuantityMeasurementApp {
 
 		demonstrateAddition(new Quantity<>(1.0, WeightUnit.KILOGRAM), new Quantity<>(1000.0, WeightUnit.GRAM),
 				WeightUnit.GRAM);
+		
+		Quantity<VolumeUnit> v1 = new Quantity<>(1.0, VolumeUnit.LITRE);
+		Quantity<VolumeUnit> v2 = new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+		Quantity<VolumeUnit> v3 = new Quantity<>(1.0, VolumeUnit.GALLON);
+
+		demonstrateEquality(v1, v2);
+
+		demonstrateConversion(v1, VolumeUnit.MILLILITRE);
+
+		demonstrateAddition(v1, v2, VolumeUnit.LITRE);
 	}
 }
