@@ -88,6 +88,63 @@ public class Quantity<U extends IMeasurable> {
         return new Quantity<>(resultValue, targetUnit);
     }
 
+	private void validateArithmetic(Quantity<U> other) {
+		if (other == null)
+			throw new IllegalArgumentException("Other quantity cannot be null");
+
+		if (this.unit == null || other.unit == null)
+			throw new IllegalArgumentException("Unit cannot be null");
+
+		if (!this.unit.getClass().equals(other.unit.getClass()))
+			throw new IllegalArgumentException("Incompatible measurement categories");
+
+		if (!Double.isFinite(this.value) || !Double.isFinite(other.value))
+			throw new IllegalArgumentException("Values must be finite");
+	}
+
+	public Quantity<U> subtract(Quantity<U> other) {
+
+		validateArithmetic(other);
+
+		double baseThis = this.unit.convertToBaseUnit(this.value);
+		double baseOther = other.unit.convertToBaseUnit(other.value);
+
+		double baseResult = baseThis - baseOther;
+
+		double resultInTarget = this.unit.convertFromBaseUnit(baseResult);
+
+		return new Quantity<>(resultInTarget, this.unit);
+	}
+
+	public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+
+		validateArithmetic(other);
+
+		if (targetUnit == null)
+			throw new IllegalArgumentException("Target unit cannot be null");
+
+		double baseThis = this.unit.convertToBaseUnit(this.value);
+		double baseOther = other.unit.convertToBaseUnit(other.value);
+
+		double baseResult = baseThis - baseOther;
+
+		double resultInTarget = targetUnit.convertFromBaseUnit(baseResult);
+
+		return new Quantity<>(resultInTarget, targetUnit);
+	}
+
+	public double divide(Quantity<U> other) {
+
+		validateArithmetic(other);
+
+		double baseThis = this.unit.convertToBaseUnit(this.value);
+		double baseOther = other.unit.convertToBaseUnit(other.value);
+
+		if (baseOther == 0.0)
+			throw new ArithmeticException("Division by zero");
+
+		return baseThis / baseOther;
+	}
     @Override
     public boolean equals(Object obj) {
 
