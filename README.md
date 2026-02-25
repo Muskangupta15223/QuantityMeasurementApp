@@ -233,3 +233,21 @@ double ratio = l1.divide(l2); // 2.0 (dimensionless)
 - Quantity(10.0, FEET).add(Quantity(5.0, FEET)) → 15.00 FEET
 - Quantity(10.0, FEET).subtract(Quantity(5.0, FEET)) → 5.00 FEET
 - Quantity(10.0, FEET).divide(Quantity(5.0, FEET)) → 2.0
+-----------------------------------
+## UC14: Temperature Measurements - Selective Arithmetic Support
+### What we did:
+- Created TemperatureUnit enum (CELSIUS, FAHRENHEIT, KELVIN)
+- Implemented non-linear conversions (temperature has offset, not just scaling)
+- Created SupportsArithmetic functional interface
+- Extended IMeasurable with arithmetic support checking
+- Made arithmetic operations validate unit support
+- Key insight: Temperature doesn't support addition/subtraction of absolute values
+
+```
+Example
+Functional Interface for Arithmetic Support
+@FunctionalInterface
+public interface SupportsArithmetic {
+    boolean isSupported();
+}
+```
