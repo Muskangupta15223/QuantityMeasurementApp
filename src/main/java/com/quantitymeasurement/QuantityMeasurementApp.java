@@ -120,5 +120,8 @@ public class QuantityMeasurementApp {
 		
 		demonstrateSubtraction(x1, x2);
 		demonstrateDivision(x1, x2);
+		Quantity<TemperatureUnit> temp1 = new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+		Quantity<TemperatureUnit> temp2 = new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+		
 	}
 }
