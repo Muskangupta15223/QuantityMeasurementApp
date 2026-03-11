@@ -251,3 +251,200 @@ public interface SupportsArithmetic {
     boolean isSupported();
 }
 ```
+---
+
+## **UC15: N-Tier Architecture Refactoring**
+
+### **What we did:**
+- Refactored the monolithic application into a layered N-Tier Architecture
+- Created **Controller**, **Service**, **Repository**, **Model/DTO**, and **Exception** layers
+- Organized code into proper package structure reflecting the architecture
+- Implemented design patterns: Singleton, Factory, Dependency Injection
+- Added file-based persistence through cache repository
+- Created clean separation between internal models and external DTOs
+
+### **What we learned:**
+
+#### 1. N-Tier Architecture Pattern
+```
+📂 controller/
+    └── QuantityMeasurementController.java
+📂 service/
+    ├── IQuantityMeasurementService.java
+    └── QuantityMeasurementServiceImpl.java
+📂 repository/
+    ├── IQuantityMeasurementRepository.java
+    └── QuantityMeasurementCacheRepository.java
+📂 model/
+    ├── QuantityModel.java
+    └── QuantityMeasurementEntity.java
+📂 dto/
+    └── QuantityDTO.java
+📂 exception/
+    └── QuantityMeasurementException.java
+```
+
+**Layer responsibilities:**
+- **Controller**: User interaction layer, delegates to service
+- **Service**: Business logic, orchestrates operations
+- **Repository**: Data persistence, abstracts storage mechanism
+- **Model/Entity**: Internal domain objects, persistence entities
+- **DTO**: External API contracts, decoupled from domain
+
+#### 2. Data Transfer Object (DTO) Pattern
+```java
+public class QuantityDTO {
+    public interface IMeasurableUnit {
+        String getUnitName();
+        String getMeasurementType();
+    }
+    
+    public enum LengthUnit implements IMeasurableUnit { FEET, INCHES, YARDS, CENTIMETERS; }
+    public enum VolumeUnit implements IMeasurableUnit { LITRE, MILLILITRE, GALLON; }
+    public enum WeightUnit implements IMeasurableUnit { KILOGRAM, GRAM, POUND; }
+    public enum TemperatureUnit implements IMeasurableUnit { CELSIUS, FAHRENHEIT, KELVIN; }
+    
+    public double value;
+    public String unit;
+    public String measurementType;
+}
+```
+
+**Why DTO matters:**
+- **Decoupling**: External API independent of internal implementation
+- **Versioning**: Can change internal model without breaking API
+- **Security**: Expose only what's needed externally
+- **Simplicity**: Simpler objects for data transfer
+
+#### 3. Repository Pattern with Singleton
+```java
+public class QuantityMeasurementCacheRepository implements IQuantityMeasurementRepository {
+    private static QuantityMeasurementCacheRepository instance;
+    private final Map<String, QuantityMeasurementEntity> cache;
+    private static final Path STORAGE_FILE = Path.of("quantity_measurements.dat");
+    
+    private QuantityMeasurementCacheRepository() {
+        cache = new ConcurrentHashMap<>();
+        loadFromDisk();
+    }
+    
+    public static synchronized QuantityMeasurementCacheRepository getInstance() {
+        if (instance == null) {
+            instance = new QuantityMeasurementCacheRepository();
+        }
+        return instance;
+    }
+}
+```
+
+**Singleton benefits:**
+- Single instance ensures data consistency
+- Central access point for persistence
+- Lazy initialization for resource efficiency
+- Thread-safe implementation with `synchronized`
+
+#### 4. Service Layer with Interface Segregation
+```java
+public interface IQuantityMeasurementService {
+    boolean compare(QuantityDTO dto1, QuantityDTO dto2);
+    QuantityDTO convert(QuantityDTO dto, String targetUnit);
+    QuantityDTO add(QuantityDTO dto1, QuantityDTO dto2);
+    QuantityDTO add(QuantityDTO dto1, QuantityDTO dto2, String targetUnit);
+    QuantityDTO subtract(QuantityDTO dto1, QuantityDTO dto2);
+    QuantityDTO subtract(QuantityDTO dto1, QuantityDTO dto2, String targetUnit);
+    double divide(QuantityDTO dto1, QuantityDTO dto2);
+}
+
+public class QuantityMeasurementServiceImpl implements IQuantityMeasurementService {
+    private final IQuantityMeasurementRepository repository;
+    
+    public QuantityMeasurementServiceImpl(IQuantityMeasurementRepository repository) {
+        this.repository = repository;  // Dependency Injection
+    }
+}
+```
+
+**Interface Segregation Principle:**
+- Clients depend only on methods they use
+- Repository interface separate from service interface
+- Easy to mock for testing
+
+#### 5. Factory Pattern in Application
+```java
+public final class QuantityMeasurementApp {
+    private static QuantityMeasurementApp instance;
+    private final QuantityMeasurementController controller;
+    
+    private QuantityMeasurementApp() {
+        IQuantityMeasurementRepository repository = QuantityMeasurementCacheRepository.getInstance();
+        IQuantityMeasurementService service = new QuantityMeasurementServiceImpl(repository);
+        this.controller = new QuantityMeasurementController(service, repository);
+    }
+    
+    // Factory methods
+    public static Quantity<LengthUnit> createLength(double value, LengthUnit unit) {
+        return new Quantity<>(value, unit);
+    }
+}
+```
+
+**Factory pattern benefits:**
+- Centralized object creation
+- Encapsulates construction complexity
+- Easy to change implementations
+
+#### 6. Entity Pattern for Persistence
+```java
+public class QuantityMeasurementEntity implements Serializable {
+    private final String id;
+    private final String operationType;
+    private final double value1;
+    private final String unit1;
+    private final double value2;
+    private final String unit2;
+    private final String resultUnit;
+    private final double result;
+    private final LocalDateTime timestamp;
+}
+```
+
+**Entity characteristics:**
+- Serializable for persistence
+- Unique ID for identification
+- Immutable for thread safety
+- Complete operation record
+
+#### 7. Controller Layer
+```java
+public class QuantityMeasurementController {
+    private final IQuantityMeasurementService service;
+    private final IQuantityMeasurementRepository repository;
+    
+    public boolean compareQuantities(QuantityDTO dto1, QuantityDTO dto2) {
+        return service.compare(dto1, dto2);
+    }
+    
+    public QuantityDTO convertQuantity(QuantityDTO dto, String targetUnit) {
+        return service.convert(dto, targetUnit);
+    }
+}
+```
+
+**Controller responsibilities:**
+- Receive user requests
+- Delegate to appropriate service
+- Return results to caller
+- No business logic
+
+### **Design patterns summary:**
+
+| Pattern | Implementation | Purpose |
+|---------|----------------|---------|
+| **Singleton** | CacheRepository, App | Single instance, global access |
+| **Factory** | QuantityMeasurementApp | Object creation encapsulation |
+| **Repository** | IQuantityMeasurementRepository | Data access abstraction |
+| **DTO** | QuantityDTO | External data transfer |
+| **Dependency Injection** | ServiceImpl constructor | Loose coupling |
+| **Interface Segregation** | IService, IRepository | Client-specific interfaces |
+
+### **Architecture benefits:**
