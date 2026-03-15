@@ -251,7 +251,7 @@ public interface SupportsArithmetic {
     boolean isSupported();
 }
 ```
----
+----------
 
 ## **UC15: N-Tier Architecture Refactoring**
 
@@ -447,4 +447,48 @@ public class QuantityMeasurementController {
 | **Dependency Injection** | ServiceImpl constructor | Loose coupling |
 | **Interface Segregation** | IService, IRepository | Client-specific interfaces |
 
-### **Architecture benefits:**
+-------------
+## **UC16: Database Integration with JDBC for Quantity Measurement Persistence**
+
+### Implementaion
+- Added JDBC-based persistent repository: `QuantityMeasurementDatabaseRepository`
+- Added connection pooling with HikariCP (`ConnectionPool`)
+- Added centralized configuration via `application.properties` (`ApplicationConfig`)
+- Added production schema script at `src/main/resources/db/schema.sql`
+- Extended repository contract for query/filter/count/delete/resource operations
+- Kept backward compatibility with `QuantityMeasurementCacheRepository`
+- Wired repository selection through configuration (`app.repository.type=cache|database`)
+
+### **What we learned:**
+
+#### 1. Repository Swapping with Dependency Injection
+```java
+String repositoryType = ApplicationConfig.getInstance().getRepositoryType();
+if ("database".equalsIgnoreCase(repositoryType)) {
+    return new QuantityMeasurementDatabaseRepository();
+}
+return QuantityMeasurementCacheRepository.getInstance();
+```
+
+#### 2. JDBC + Parameterized SQL
+```java
+PreparedStatement statement = connection.prepareStatement(INSERT_SQL);
+statement.setDouble(1, entity.getThisValue());
+statement.setString(2, entity.getThisUnit());
+statement.setString(3, entity.getThisMeasurementType());
+```
+
+#### 3. Transaction Management
+```java
+connection.setAutoCommit(false);
+deleteHistory.executeUpdate();
+deleteAll.executeUpdate();
+connection.commit();
+```
+
+#### 4. Connection Pool Monitoring
+```java
+Map<String, Integer> stats = repository.getPoolStatistics();
+// activeConnections, idleConnections, totalConnections, threadsAwaitingConnection
+```
+-------------

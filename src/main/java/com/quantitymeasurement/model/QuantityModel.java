@@ -1,8 +1,8 @@
 package com.quantitymeasurement.model;
 
-import com.quantitymeasurement.IMeasurable;
-import com.quantitymeasurement.LengthUnit;
-import com.quantitymeasurement.WeightUnit;
+import com.quantitymeasurement.unit.IMeasurable;
+import com.quantitymeasurement.unit.LengthUnit;
+import com.quantitymeasurement.unit.WeightUnit;
 
 public class QuantityModel<U extends IMeasurable> {
 

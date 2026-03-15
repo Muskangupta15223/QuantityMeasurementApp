@@ -1,32 +1,27 @@
 package quantitymeasurement;
 
 import static org.junit.jupiter.api.Assertions.*;
-import java.lang.reflect.*;
 import org.junit.jupiter.api.Test;
 
-import com.quantitymeasurement.IMeasurable;
-import com.quantitymeasurement.Length;
-import com.quantitymeasurement.LengthUnit;
-import com.quantitymeasurement.Quantity;
 import com.quantitymeasurement.QuantityMeasurementApp;
-import com.quantitymeasurement.TemperatureUnit;
-import com.quantitymeasurement.VolumeUnit;
-import com.quantitymeasurement.Weight;
-import com.quantitymeasurement.WeightUnit;
 import com.quantitymeasurement.controller.QuantityMeasurementController;
 import com.quantitymeasurement.dto.QuantityDTO;
 import com.quantitymeasurement.exception.QuantityMeasurementException;
 import com.quantitymeasurement.model.QuantityMeasurementEntity;
 import com.quantitymeasurement.model.QuantityModel;
+import com.quantitymeasurement.quantity.Quantity;
 import com.quantitymeasurement.repository.IQuantityMeasurementRepository;
 import com.quantitymeasurement.repository.QuantityMeasurementCacheRepository;
 import com.quantitymeasurement.service.IQuantityMeasurementService;
 import com.quantitymeasurement.service.QuantityMeasurementServiceImpl;
+import com.quantitymeasurement.unit.IMeasurable;
+import com.quantitymeasurement.unit.LengthUnit;
+import com.quantitymeasurement.unit.TemperatureUnit;
+import com.quantitymeasurement.unit.VolumeUnit;
+import com.quantitymeasurement.unit.WeightUnit;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class QuantityMeasurementAppTest {
 
@@ -1303,30 +1298,28 @@ public class QuantityMeasurementAppTest {
 		Quantity<LengthUnit> length = new Quantity<>(10, LengthUnit.FEET);
 		Quantity<WeightUnit> weight = new Quantity<>(5, WeightUnit.KILOGRAM);
 
-		assertThrows(IllegalArgumentException.class, () -> length.add((Quantity) weight));
-		assertThrows(IllegalArgumentException.class, () -> length.subtract((Quantity) weight));
-		assertThrows(IllegalArgumentException.class, () -> length.divide((Quantity) weight));
+		Quantity<LengthUnit> incompatibleOperand = castToLengthQuantity(weight);
+
+		assertThrows(IllegalArgumentException.class, () -> length.add(incompatibleOperand));
+		assertThrows(IllegalArgumentException.class, () -> length.subtract(incompatibleOperand));
+		assertThrows(IllegalArgumentException.class, () -> length.divide(incompatibleOperand));
 	}
 
 	@Test
 	void testValidation_FiniteValue_ConsistentAcrossOperations() {
-		Quantity<LengthUnit> valid = new Quantity<>(10, LengthUnit.FEET);
-
-		// Test that constructor rejects infinite values
-		assertThrows(IllegalArgumentException.class, 
+		// Test that constructor rejects non-finite values.
+		assertThrows(IllegalArgumentException.class,
 				() -> new Quantity<>(Double.POSITIVE_INFINITY, LengthUnit.FEET));
-		assertThrows(IllegalArgumentException.class, 
+		assertThrows(IllegalArgumentException.class,
 				() -> new Quantity<>(Double.NEGATIVE_INFINITY, LengthUnit.FEET));
-		assertThrows(IllegalArgumentException.class, 
+		assertThrows(IllegalArgumentException.class,
 				() -> new Quantity<>(Double.NaN, LengthUnit.FEET));
 	}
 
 	@Test
 	void testArithmeticOperation_Add_EnumComputation() throws Exception {
-		Class<?> enumClass = Class.forName("com.quantitymeasurement.Quantity$ArithmeticOperation");
-		Object add = Enum.valueOf((Class<Enum>) enumClass, "ADD");
-
-		Method compute = enumClass.getDeclaredMethod("compute", double.class, double.class);
+		Object add = getEnumConstant("com.quantitymeasurement.quantity.Quantity$ArithmeticOperation", "ADD");
+		Method compute = add.getClass().getDeclaredMethod("compute", double.class, double.class);
 		compute.setAccessible(true);
 
 		double result = (double) compute.invoke(add, 10.0, 5.0);
@@ -1335,10 +1328,8 @@ public class QuantityMeasurementAppTest {
 
 	@Test
 	void testArithmeticOperation_Subtract_EnumComputation() throws Exception {
-		Class<?> enumClass = Class.forName("com.quantitymeasurement.Quantity$ArithmeticOperation");
-		Object sub = Enum.valueOf((Class<Enum>) enumClass, "SUBTRACT");
-
-		Method compute = enumClass.getDeclaredMethod("compute", double.class, double.class);
+		Object sub = getEnumConstant("com.quantitymeasurement.quantity.Quantity$ArithmeticOperation", "SUBTRACT");
+		Method compute = sub.getClass().getDeclaredMethod("compute", double.class, double.class);
 		compute.setAccessible(true);
 
 		double result = (double) compute.invoke(sub, 10.0, 5.0);
@@ -1347,10 +1338,8 @@ public class QuantityMeasurementAppTest {
 
 	@Test
 	void testArithmeticOperation_Divide_EnumComputation() throws Exception {
-		Class<?> enumClass = Class.forName("com.quantitymeasurement.Quantity$ArithmeticOperation");
-		Object div = Enum.valueOf((Class<Enum>) enumClass, "DIVIDE");
-
-		Method compute = enumClass.getDeclaredMethod("compute", double.class, double.class);
+		Object div = getEnumConstant("com.quantitymeasurement.quantity.Quantity$ArithmeticOperation", "DIVIDE");
+		Method compute = div.getClass().getDeclaredMethod("compute", double.class, double.class);
 		compute.setAccessible(true);
 
 		double result = (double) compute.invoke(div, 10.0, 5.0);
@@ -1463,7 +1452,7 @@ public class QuantityMeasurementAppTest {
 	@Test
 	void testHelper_PrivateVisibility() throws Exception {
 		Method method = Quantity.class.getDeclaredMethod("performBaseArithmetic", Quantity.class,
-				Class.forName("com.quantitymeasurement.Quantity$ArithmeticOperation"));
+				Class.forName("com.quantitymeasurement.quantity.Quantity$ArithmeticOperation"));
 
 		assertTrue(Modifier.isPrivate(method.getModifiers()));
 	}
@@ -2151,5 +2140,24 @@ public class QuantityMeasurementAppTest {
 		QuantityDTO result = service.convert(celsius, "FAHRENHEIT");
 
 		assertEquals(212.0, result.getValue(), 0.01);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Quantity<LengthUnit> castToLengthQuantity(Quantity<?> quantity) {
+		return (Quantity<LengthUnit>) quantity;
+	}
+
+	private static Object getEnumConstant(String enumClassName, String constantName) throws ClassNotFoundException {
+		Class<?> enumClass = Class.forName(enumClassName);
+		Object[] constants = enumClass.getEnumConstants();
+		if (constants == null) {
+			throw new IllegalArgumentException(enumClassName + " is not an enum");
+		}
+		for (Object constant : constants) {
+			if (((Enum<?>) constant).name().equals(constantName)) {
+				return constant;
+			}
+		}
+		throw new IllegalArgumentException("Enum constant not found: " + constantName);
 	}
 }

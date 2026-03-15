@@ -1,229 +1,266 @@
 package com.quantitymeasurement;
 
-import com.quantitymeasurement.repository.IQuantityMeasurementRepository;
-import com.quantitymeasurement.repository.QuantityMeasurementCacheRepository;
-
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.quantitymeasurement.controller.QuantityMeasurementController;
 import com.quantitymeasurement.dto.QuantityDTO;
 import com.quantitymeasurement.model.QuantityMeasurementEntity;
+import com.quantitymeasurement.quantity.Quantity;
+import com.quantitymeasurement.repository.IQuantityMeasurementRepository;
+import com.quantitymeasurement.repository.QuantityMeasurementCacheRepository;
+import com.quantitymeasurement.repository.QuantityMeasurementDatabaseRepository;
 import com.quantitymeasurement.service.IQuantityMeasurementService;
 import com.quantitymeasurement.service.QuantityMeasurementServiceImpl;
+import com.quantitymeasurement.unit.IMeasurable;
+import com.quantitymeasurement.unit.LengthUnit;
+import com.quantitymeasurement.unit.VolumeUnit;
+import com.quantitymeasurement.util.ApplicationConfig;
 
 public class QuantityMeasurementApp {
 
-    private static QuantityMeasurementApp instance;
-    private final QuantityMeasurementController controller;
-    private final IQuantityMeasurementRepository repository;
+	    private static final Logger logger = LoggerFactory.getLogger(QuantityMeasurementApp.class);
 
-    private QuantityMeasurementApp() {
-        this.repository = QuantityMeasurementCacheRepository.getInstance();
-        IQuantityMeasurementService service = new QuantityMeasurementServiceImpl(repository);
-        this.controller = new QuantityMeasurementController(service);
-    }
+	    private static QuantityMeasurementApp instance;
+	    private final QuantityMeasurementController controller;
+	    private final IQuantityMeasurementRepository repository;
 
-    public static QuantityMeasurementApp getInstance() {
-        if (instance == null) {
-            instance = new QuantityMeasurementApp();
-        }
-        return instance;
-    }
+	    private QuantityMeasurementApp() {
+	        this.repository = createRepository();
+	        IQuantityMeasurementService service = new QuantityMeasurementServiceImpl(repository);
+	        this.controller = new QuantityMeasurementController(service);
+	        logger.info("Application initialized with repository: {}", repository.getClass().getSimpleName());
+	    }
 
-    public QuantityMeasurementController getController() {
-        return controller;
-    }
+	    public static QuantityMeasurementApp getInstance() {
+	        if (instance == null) {
+	            instance = new QuantityMeasurementApp();
+	        }
+	        return instance;
+	    }
 
-    public IQuantityMeasurementRepository getRepository() {
-        return repository;
-    }
+	    public QuantityMeasurementController getController() {
+	        return controller;
+	    }
 
-    public static QuantityMeasurementController createController() {
-        return getInstance().getController();
-    }
+	    public IQuantityMeasurementRepository getRepository() {
+	        return repository;
+	    }
 
-    public static IQuantityMeasurementService createService(IQuantityMeasurementRepository repository) {
-        return new QuantityMeasurementServiceImpl(repository);
-    }
+	    public static QuantityMeasurementController createController() {
+	        return getInstance().getController();
+	    }
 
-    public static IQuantityMeasurementRepository createRepository() {
-        return QuantityMeasurementCacheRepository.getInstance();
-    }
+	    public static IQuantityMeasurementService createService(IQuantityMeasurementRepository repository) {
+	        return new QuantityMeasurementServiceImpl(repository);
+	    }
 
-    private void demonstrateLengthOperations() {
-        System.out.println("\n=== Length Operations ===");
+	    public static IQuantityMeasurementRepository createRepository() {
+	        String repositoryType = ApplicationConfig.getInstance().getRepositoryType();
+	        if ("database".equalsIgnoreCase(repositoryType)) {
+	            try {
+	                return new QuantityMeasurementDatabaseRepository();
+	            } catch (Exception e) {
+	                logger.warn("Database repository initialization failed, falling back to cache repository: {}", e.getMessage());
+	                return QuantityMeasurementCacheRepository.getInstance();
+	            }
+	        }
+	        return QuantityMeasurementCacheRepository.getInstance();
+	    }
 
-        QuantityDTO feet1 = new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET);
-        QuantityDTO inches12 = new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES);
-        QuantityDTO yards1 = new QuantityDTO(1.0, QuantityDTO.LengthUnit.YARDS);
-        QuantityDTO feet3 = new QuantityDTO(3.0, QuantityDTO.LengthUnit.FEET);
+	    private void demonstrateLengthOperations() {
+	        System.out.println("\n=== Length Operations ===");
 
-        controller.performComparison(feet1, inches12);
-        controller.performComparison(yards1, feet3);
+	        QuantityDTO feet1 = new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET);
+	        QuantityDTO inches12 = new QuantityDTO(12.0, QuantityDTO.LengthUnit.INCHES);
+	        QuantityDTO yards1 = new QuantityDTO(1.0, QuantityDTO.LengthUnit.YARDS);
+	        QuantityDTO feet3 = new QuantityDTO(3.0, QuantityDTO.LengthUnit.FEET);
 
-        controller.performConversion(feet1, "INCHES");
-        controller.performConversion(yards1, "FEET");
+	        controller.performComparison(feet1, inches12);
+	        controller.performComparison(yards1, feet3);
 
-        controller.performAddition(feet1, inches12);
-        controller.performAddition(feet1, inches12, "YARDS");
+	        controller.performConversion(feet1, "INCHES");
+	        controller.performConversion(yards1, "FEET");
 
-        QuantityDTO feet5 = new QuantityDTO(5.0, QuantityDTO.LengthUnit.FEET);
-        QuantityDTO feet2 = new QuantityDTO(2.0, QuantityDTO.LengthUnit.FEET);
-        controller.performSubtraction(feet5, feet2);
+	        controller.performAddition(feet1, inches12);
+	        controller.performAddition(feet1, inches12, "YARDS");
 
-        QuantityDTO feet6 = new QuantityDTO(6.0, QuantityDTO.LengthUnit.FEET);
-        controller.performDivision(feet6, feet2);
-    }
+	        QuantityDTO feet5 = new QuantityDTO(5.0, QuantityDTO.LengthUnit.FEET);
+	        QuantityDTO feet2 = new QuantityDTO(2.0, QuantityDTO.LengthUnit.FEET);
+	        controller.performSubtraction(feet5, feet2);
 
-    private void demonstrateWeightOperations() {
-        System.out.println("\n=== Weight Operations ===");
+	        QuantityDTO feet6 = new QuantityDTO(6.0, QuantityDTO.LengthUnit.FEET);
+	        controller.performDivision(feet6, feet2);
+	    }
 
-        QuantityDTO kg1 = new QuantityDTO(1.0, QuantityDTO.WeightUnit.KILOGRAM);
-        QuantityDTO grams1000 = new QuantityDTO(1000.0, QuantityDTO.WeightUnit.GRAM);
-        QuantityDTO pound1 = new QuantityDTO(1.0, QuantityDTO.WeightUnit.POUND);
+	    private void demonstrateWeightOperations() {
+	        System.out.println("\n=== Weight Operations ===");
 
-        controller.performComparison(kg1, grams1000);
+	        QuantityDTO kg1 = new QuantityDTO(1.0, QuantityDTO.WeightUnit.KILOGRAM);
+	        QuantityDTO grams1000 = new QuantityDTO(1000.0, QuantityDTO.WeightUnit.GRAM);
+	        QuantityDTO pound1 = new QuantityDTO(1.0, QuantityDTO.WeightUnit.POUND);
 
-        controller.performConversion(kg1, "GRAM");
-        controller.performConversion(pound1, "KILOGRAM");
+	        controller.performComparison(kg1, grams1000);
 
-        controller.performAddition(kg1, grams1000);
-        controller.performAddition(kg1, grams1000, "GRAM");
-    }
+	        controller.performConversion(kg1, "GRAM");
+	        controller.performConversion(pound1, "KILOGRAM");
 
-    private void demonstrateVolumeOperations() {
-        System.out.println("\n=== Volume Operations ===");
+	        controller.performAddition(kg1, grams1000);
+	        controller.performAddition(kg1, grams1000, "GRAM");
+	    }
 
-        QuantityDTO litre1 = new QuantityDTO(1.0, QuantityDTO.VolumeUnit.LITRE);
-        QuantityDTO ml1000 = new QuantityDTO(1000.0, QuantityDTO.VolumeUnit.MILLILITRE);
-        QuantityDTO gallon1 = new QuantityDTO(1.0, QuantityDTO.VolumeUnit.GALLON);
+	    private void demonstrateVolumeOperations() {
+	        System.out.println("\n=== Volume Operations ===");
 
-        controller.performComparison(litre1, ml1000);
+	        QuantityDTO litre1 = new QuantityDTO(1.0, QuantityDTO.VolumeUnit.LITRE);
+	        QuantityDTO ml1000 = new QuantityDTO(1000.0, QuantityDTO.VolumeUnit.MILLILITRE);
+	        QuantityDTO gallon1 = new QuantityDTO(1.0, QuantityDTO.VolumeUnit.GALLON);
 
-        controller.performConversion(litre1, "MILLILITRE");
-        controller.performConversion(gallon1, "LITRE");
+	        controller.performComparison(litre1, ml1000);
 
-        controller.performAddition(litre1, ml1000);
+	        controller.performConversion(litre1, "MILLILITRE");
+	        controller.performConversion(gallon1, "LITRE");
 
-        QuantityDTO litre5 = new QuantityDTO(5.0, QuantityDTO.VolumeUnit.LITRE);
-        QuantityDTO ml500 = new QuantityDTO(500.0, QuantityDTO.VolumeUnit.MILLILITRE);
-        controller.performSubtraction(litre5, ml500);
-        controller.performDivision(litre5, ml500);
-    }
-    private void demonstrateTemperatureOperations() {
-        System.out.println("\n=== Temperature Operations ===");
+	        controller.performAddition(litre1, ml1000);
 
-        QuantityDTO celsius0 = new QuantityDTO(0.0, QuantityDTO.TemperatureUnit.CELSIUS);
-        QuantityDTO fahrenheit32 = new QuantityDTO(32.0, QuantityDTO.TemperatureUnit.FAHRENHEIT);
-        QuantityDTO kelvin273 = new QuantityDTO(273.15, QuantityDTO.TemperatureUnit.KELVIN);
+	        QuantityDTO litre5 = new QuantityDTO(5.0, QuantityDTO.VolumeUnit.LITRE);
+	        QuantityDTO ml500 = new QuantityDTO(500.0, QuantityDTO.VolumeUnit.MILLILITRE);
+	        controller.performSubtraction(litre5, ml500);
+	        controller.performDivision(litre5, ml500);
+	    }
 
-        controller.performComparison(celsius0, fahrenheit32);
-        controller.performComparison(celsius0, kelvin273);
+	    private void demonstrateTemperatureOperations() {
+	        System.out.println("\n=== Temperature Operations ===");
 
-        controller.performConversion(celsius0, "FAHRENHEIT");
-        controller.performConversion(celsius0, "KELVIN");
+	        QuantityDTO celsius0 = new QuantityDTO(0.0, QuantityDTO.TemperatureUnit.CELSIUS);
+	        QuantityDTO fahrenheit32 = new QuantityDTO(32.0, QuantityDTO.TemperatureUnit.FAHRENHEIT);
+	        QuantityDTO kelvin273 = new QuantityDTO(273.15, QuantityDTO.TemperatureUnit.KELVIN);
 
-        System.out.println("\nAttempting temperature addition (should fail):");
-        QuantityDTO celsius10 = new QuantityDTO(10.0, QuantityDTO.TemperatureUnit.CELSIUS);
-        QuantityDTO celsius20 = new QuantityDTO(20.0, QuantityDTO.TemperatureUnit.CELSIUS);
-        controller.performAddition(celsius10, celsius20);
-    }
+	        controller.performComparison(celsius0, fahrenheit32);
+	        controller.performComparison(celsius0, kelvin273);
 
-    private void demonstrateCrossCategoryPrevention() {
-        System.out.println("\n=== Cross-Category Operation Prevention ===");
+	        controller.performConversion(celsius0, "FAHRENHEIT");
+	        controller.performConversion(celsius0, "KELVIN");
 
-        QuantityDTO feet = new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET);
-        QuantityDTO kg = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
+	        System.out.println("\nAttempting temperature addition (should fail):");
+	        QuantityDTO celsius10 = new QuantityDTO(10.0, QuantityDTO.TemperatureUnit.CELSIUS);
+	        QuantityDTO celsius20 = new QuantityDTO(20.0, QuantityDTO.TemperatureUnit.CELSIUS);
+	        controller.performAddition(celsius10, celsius20);
+	    }
 
-        System.out.println("Attempting to compare length with weight (should fail):");
-        controller.performComparison(feet, kg);
+	    private void demonstrateCrossCategoryPrevention() {
+	        System.out.println("\n=== Cross-Category Operation Prevention ===");
 
-        System.out.println("\nAttempting to add length with weight (should fail):");
-        controller.performAddition(feet, kg);
-    }
+	        QuantityDTO feet = new QuantityDTO(1.0, QuantityDTO.LengthUnit.FEET);
+	        QuantityDTO kg = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
 
-    private void displayStoredMeasurements() {
-        System.out.println("\n=== Stored Measurements ===");
-        List<QuantityMeasurementEntity> measurements = repository.getAllMeasurements();
-        System.out.println("Total measurements stored: " + measurements.size());
-        for (QuantityMeasurementEntity entity : measurements) {
-            System.out.println("  " + entity);
-        }
-    }
+	        System.out.println("Attempting to compare length with weight (should fail):");
+	        controller.performComparison(feet, kg);
 
-    public static <U extends IMeasurable> boolean demonstrateEquality(Quantity<U> q1, Quantity<U> q2) {
-        return q1.equals(q2);
-    }
+	        System.out.println("\nAttempting to add length with weight (should fail):");
+	        controller.performAddition(feet, kg);
+	    }
 
-    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(Quantity<U> q1, Quantity<U> q2) {
-        Quantity<U> result = q1.subtract(q2);
-        System.out.println("Subtraction Result: " + result);
-        return result;
-    }
+	    private void displayStoredMeasurements() {
+	        logger.info("=== Stored Measurements ===");
+	        var measurements = repository.getAllMeasurements();
+	        logger.info("Total measurements stored: {}", measurements.size());
+	        for (QuantityMeasurementEntity entity : measurements) {
+	            logger.info("{}", entity);
+	        }
+	        if (!repository.getPoolStatistics().isEmpty()) {
+	            logger.info("Pool stats: {}", repository.getPoolStatistics());
+	        }
+	    }
 
-    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(Quantity<U> q1, Quantity<U> q2, U targetUnit) {
-        Quantity<U> result = q1.subtract(q2, targetUnit);
-        System.out.println("Subtraction Result: " + result);
-        return result;
-    }
+	    public void deleteAllMeasurements() {
+	        repository.deleteAllMeasurements();
+	        logger.info("All measurements deleted");
+	    }
 
-    public static <U extends IMeasurable> double demonstrateDivision(Quantity<U> q1, Quantity<U> q2) {
-        double result = q1.divide(q2);
-        System.out.println("Division Result: " + result);
-        return result;
-    }
+	    public void closeResources() {
+	        repository.releaseResources();
+	        logger.info("Repository resources released");
+	    }
 
-    public static <U extends IMeasurable> boolean demonstrateComparison(double value1, U unit1, double value2, U unit2) {
-        Quantity<U> q1 = new Quantity<>(value1, unit1);
-        Quantity<U> q2 = new Quantity<>(value2, unit2);
-        boolean result = q1.equals(q2);
-        System.out.println("quantities are equal : " + result);
-        return result;
-    }
+	    public static <U extends IMeasurable> boolean demonstrateEquality(Quantity<U> q1, Quantity<U> q2) {
+	        return q1.equals(q2);
+	    }
 
-    public static <U extends IMeasurable> double demonstrateConversion(double value, U from, U to) {
-        double result = Quantity.convert(value, from, to);
-        System.out.println(value + " " + from.getUnitName() + " = " + result + " " + to.getUnitName());
-        return result;
-    }
+	    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(Quantity<U> q1, Quantity<U> q2) {
+	        Quantity<U> result = q1.subtract(q2);
+	        System.out.println("Subtraction Result: " + result);
+	        return result;
+	    }
 
-    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(Quantity<U> q1, Quantity<U> q2) {
-        Quantity<U> result = q1.add(q2);
-        System.out.println("Addition : " + result);
-        return result;
-    }
+	    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(Quantity<U> q1, Quantity<U> q2, U targetUnit) {
+	        Quantity<U> result = q1.subtract(q2, targetUnit);
+	        System.out.println("Subtraction Result: " + result);
+	        return result;
+	    }
 
-    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(Quantity<U> q1, Quantity<U> q2, U targetUnit) {
-        Quantity<U> result = q1.add(q2, targetUnit);
-        System.out.println("Addition : " + result);
-        return result;
-    }
+	    public static <U extends IMeasurable> double demonstrateDivision(Quantity<U> q1, Quantity<U> q2) {
+	        double result = q1.divide(q2);
+	        System.out.println("Division Result: " + result);
+	        return result;
+	    }
 
-    public static <U extends IMeasurable> void demonstrateConversion(Quantity<U> quantity, U targetUnit) {
-        Quantity<U> converted = quantity.convertTo(targetUnit);
-        System.out.println("Original: " + quantity);
-        System.out.println("Converted: " + converted);
-    }
+	    public static <U extends IMeasurable> boolean demonstrateComparison(double value1, U unit1, double value2, U unit2) {
+	        Quantity<U> q1 = new Quantity<>(value1, unit1);
+	        Quantity<U> q2 = new Quantity<>(value2, unit2);
+	        boolean result = q1.equals(q2);
+	        System.out.println("quantities are equal : " + result);
+	        return result;
+	    }
 
-    public static void main(String[] args) {
+	    public static <U extends IMeasurable> double demonstrateConversion(double value, U from, U to) {
+	        double result = Quantity.convert(value, from, to);
+	        System.out.println(value + " " + from.getUnitName() + " = " + result + " " + to.getUnitName());
+	        return result;
+	    }
 
-        QuantityMeasurementApp app = QuantityMeasurementApp.getInstance();
+	    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(Quantity<U> q1, Quantity<U> q2) {
+	        Quantity<U> result = q1.add(q2);
+	        System.out.println("Addition : " + result);
+	        return result;
+	    }
 
-        app.demonstrateLengthOperations();
-        app.demonstrateWeightOperations();
-        app.demonstrateVolumeOperations();
-        app.demonstrateTemperatureOperations();
-        app.demonstrateCrossCategoryPrevention();
-        app.displayStoredMeasurements();
+	    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(Quantity<U> q1, Quantity<U> q2, U targetUnit) {
+	        Quantity<U> result = q1.add(q2, targetUnit);
+	        System.out.println("Addition : " + result);
+	        return result;
+	    }
 
-        System.out.println("\n=== Legacy Operations (Backward Compatibility) ===");
+	    public static <U extends IMeasurable> void demonstrateConversion(Quantity<U> quantity, U targetUnit) {
+	        Quantity<U> converted = quantity.convertTo(targetUnit);
+	        System.out.println("Original: " + quantity);
+	        System.out.println("Converted: " + converted);
+	    }
 
-        demonstrateComparison(1.0, LengthUnit.FEET, 12.0, LengthUnit.INCHES);
-         demonstrateAddition(new Quantity<>(1.0, LengthUnit.FEET), new Quantity<>(12.0, LengthUnit.INCHES));
+	    public static void main(String[] args) {
 
-        Quantity<VolumeUnit> v1 = new Quantity<>(5.0, VolumeUnit.LITRE);
-        Quantity<VolumeUnit> v2 = new Quantity<>(500.0, VolumeUnit.MILLILITRE);
-        demonstrateSubtraction(v1, v2);
-        demonstrateDivision(v1, v2);
-    }
-}
+	        QuantityMeasurementApp app = QuantityMeasurementApp.getInstance();
+
+	        app.demonstrateLengthOperations();
+	        app.demonstrateWeightOperations();
+	        app.demonstrateVolumeOperations();
+	        app.demonstrateTemperatureOperations();
+	        app.demonstrateCrossCategoryPrevention();
+	        app.displayStoredMeasurements();
+
+	        System.out.println("\n=== Legacy Operations (Backward Compatibility) ===");
+
+	        
+	        demonstrateComparison(1.0, LengthUnit.FEET, 12.0, LengthUnit.INCHES);
+	        demonstrateConversion(1.0, LengthUnit.FEET, LengthUnit.INCHES);
+	        demonstrateAddition(new Quantity<>(1.0, LengthUnit.FEET), new Quantity<>(12.0, LengthUnit.INCHES));
+
+	        Quantity<VolumeUnit> v1 = new Quantity<>(5.0, VolumeUnit.LITRE);
+	        Quantity<VolumeUnit> v2 = new Quantity<>(500.0, VolumeUnit.MILLILITRE);
+	        demonstrateSubtraction(v1, v2);
+	        demonstrateDivision(v1, v2);
+
+	        app.displayStoredMeasurements();
+	        app.closeResources();
+	    }
+	}

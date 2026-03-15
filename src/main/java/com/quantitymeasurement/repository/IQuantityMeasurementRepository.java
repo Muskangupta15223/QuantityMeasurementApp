@@ -2,7 +2,7 @@ package com.quantitymeasurement.repository;
 
 import com.quantitymeasurement.model.QuantityMeasurementEntity;
 
-import java.util.List;
+import java.util.*;
 
 public interface IQuantityMeasurementRepository {
 
@@ -10,7 +10,34 @@ public interface IQuantityMeasurementRepository {
 
     List<QuantityMeasurementEntity> getAllMeasurements();
 
+    List<QuantityMeasurementEntity> getMeasurementsByOperation(String operation);
+
+    List<QuantityMeasurementEntity> getMeasurementsByMeasurementType(String measurementType);
+
+    default List<QuantityMeasurementEntity> getMeasurementsByType(String measurementType) {
+        return getMeasurementsByMeasurementType(measurementType);
+    }
+
+    long getMeasurementCount();
+
+    default long getTotalCount() {
+        return getMeasurementCount();
+    }
+
+    void deleteAllMeasurements();
+
+    default void deleteAll() {
+        deleteAllMeasurements();
+    }
+
+    default Map<String, Integer> getPoolStatistics() {
+        return Collections.emptyMap();
+    }
+
+    default void releaseResources() {
+    }
+
     public static void main(String[] args) {
-        System.out.println("Testing IQuantityMeasurementRepository interface");
+        System.out.println("Testing IQuantityMeasurementRepository");
     }
 }

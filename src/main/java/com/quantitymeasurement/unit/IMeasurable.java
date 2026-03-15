@@ -1,4 +1,6 @@
-package com.quantitymeasurement;
+package com.quantitymeasurement.unit;
+
+import com.quantitymeasurement.SupportsArithmetic;
 
 public interface IMeasurable {
 
