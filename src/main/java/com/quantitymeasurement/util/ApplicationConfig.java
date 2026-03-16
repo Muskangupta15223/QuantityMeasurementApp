@@ -107,4 +107,7 @@ public final class ApplicationConfig {
             return defaultValue;
         }
     }
+    public boolean isH2ConsoleEnabled(){
+        return Boolean.parseBoolean(get("db.h2.console.enabled","false"));
+    }
 }

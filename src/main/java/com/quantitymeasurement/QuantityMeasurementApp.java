@@ -1,5 +1,4 @@
 package com.quantitymeasurement;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,8 +236,7 @@ public class QuantityMeasurementApp {
 	        System.out.println("Converted: " + converted);
 	    }
 
-	    public static void main(String[] args) {
-
+	    public static void main(String[] args)throws Exception {
 	        QuantityMeasurementApp app = QuantityMeasurementApp.getInstance();
 
 	        app.demonstrateLengthOperations();
