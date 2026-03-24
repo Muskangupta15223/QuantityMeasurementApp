@@ -132,11 +132,4 @@ public class QuantityDTO {
     	   }
     	return true;
     }
-    public static void main(String[] args) {
-        QuantityDTO dto1 = new QuantityDTO(1.0, LengthUnit.FEET);
-        System.out.println("QuantityDTO created: " + dto1);
-
-        QuantityDTO dto2 = new QuantityDTO(100.0, "CELSIUS", "TemperatureUnit");
-        System.out.println("QuantityDTO created: " + dto2);
-    }
 }
