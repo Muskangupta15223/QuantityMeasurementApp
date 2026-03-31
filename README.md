@@ -532,3 +532,31 @@ public ResponseEntity<?> compare(@RequestBody QuantityInputDTO input) {
     ));
 }
 ```
+
+## **UC18: Google OAuth2 Authentication and User Management**
+
+### **What we did:**
+- Integrated Google OAuth2 for secure authentication
+- Created `User` entity with Google profile data
+- Added user-measurement ownership (ManyToOne relationship)
+- Configured multi-database support (PostgreSQL, MySQL, H2)
+
+
+### **User-Specific Endpoints:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/auth/user` | Get current user info |
+| GET | `/api/v1/quantities/my/history` | User's operation history |
+
+### **Configuration Profiles:**
+- `dev` - H2 in-memory, debug logging
+- `prod` - MySQL database
+
+### **.env files**
+```bash
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+DATABASE_URL=jdbc:postgresql://localhost:5432/quantitymeasurementdb
+```
+
+----
