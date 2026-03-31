@@ -1,24 +1,23 @@
 package com.app.quantitymeasurement.model;
 
-import com.app.quantitymeasurement.unit.IMeasurable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.*;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-
-@Entity
-@Table(name = "quantity_measurements",
-        indexes = {
-                @Index(name = "idx_operation", columnList = "operation"),
-                @Index(name = "idx_measurement_type", columnList = "this_measurement_type, that_measurement_type")
-        })
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "quantity_measurement_entity", indexes = {
+        @Index(name = "idx_operation", columnList = "operation"),
+        @Index(name = "idx_measurement_type", columnList = "this_measurement_type"),
+        @Index(name = "idx_is_error", columnList = "is_error"),
+        @Index(name = "idx_user_id", columnList = "user_id")
+})
 public class QuantityMeasurementEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -27,20 +26,19 @@ public class QuantityMeasurementEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    // THIS
-    @Column(name = "this_value")
+    @Column(name = "this_value", nullable = false)
     private double thisValue;
 
-    @Column(name = "this_unit")
+    @Column(name = "this_unit", nullable = false)
     private String thisUnit;
 
-    @Column(name = "this_measurement_type")
+    @Column(name = "this_measurement_type", nullable = false)
     private String thisMeasurementType;
 
-    // THAT
     @Column(name = "that_value")
     private double thatValue;
 
@@ -50,90 +48,35 @@ public class QuantityMeasurementEntity implements Serializable {
     @Column(name = "that_measurement_type")
     private String thatMeasurementType;
 
-    // OPERATION
-    @Column(name = "operation")
+    @Column(name = "operation", nullable = false)
     private String operation;
 
-    // RESULT
     @Column(name = "result_value")
     private double resultValue;
-
-    @Column(name = "result_unit")
-    private String resultUnit;
-
-    @Column(name = "result_measurement_type")
-    private String resultMeasurementType;
 
     @Column(name = "result_string")
     private String resultString;
 
-    // ERROR HANDLING
-    @Column(name = "is_error")
+    @Column(name = "is_error", nullable = false)
     private boolean isError;
 
     @Column(name = "error_message")
     private String errorMessage;
 
-    //  CONSTRUCTORS 
-    
-    public QuantityMeasurementEntity(
-            QuantityModel<? extends IMeasurable> thisQuantity,
-            QuantityModel<? extends IMeasurable> thatQuantity,
-            String operation,
-            String result
-    ) {
-        this(thisQuantity, thatQuantity, operation);
-        this.resultString = result;
-    }
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    public QuantityMeasurementEntity(
-            QuantityModel<? extends IMeasurable> thisQuantity,
-            QuantityModel<? extends IMeasurable> thatQuantity,
-            String operation,
-            QuantityModel<? extends IMeasurable> result
-    ) {
-        this(thisQuantity, thatQuantity, operation);
-        this.resultValue = result.getValue();
-        this.resultUnit = result.getUnit().getUnitName();
-        this.resultMeasurementType = result.getUnit().getMeasurementType();
-    }
-
-    public QuantityMeasurementEntity(
-            QuantityModel<? extends IMeasurable> thisQuantity,
-            QuantityModel<? extends IMeasurable> thatQuantity,
-            String operation,
-            String errorMessage,
-            boolean isError
-    ) {
-        this(thisQuantity, thatQuantity, operation);
-        this.errorMessage = errorMessage;
-        this.isError = isError;
-    }
-
-    private QuantityMeasurementEntity(
-            QuantityModel<? extends IMeasurable> thisQuantity,
-            QuantityModel<? extends IMeasurable> thatQuantity,
-            String operation
-    ) {
-        if (thisQuantity != null) {
-            this.thisValue = thisQuantity.getValue();
-            this.thisUnit = thisQuantity.getUnit().getUnitName();
-            this.thisMeasurementType = thisQuantity.getUnit().getMeasurementType();
-        }
-
-        if (thatQuantity != null) {
-            this.thatValue = thatQuantity.getValue();
-            this.thatUnit = thatQuantity.getUnit().getUnitName();
-            this.thatMeasurementType = thatQuantity.getUnit().getMeasurementType();
-        }
-
-        this.operation = operation;
-    }
-
-    // ================= LIFECYCLE CALLBACK =================
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
-    public void onCreate() {
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

@@ -8,8 +8,6 @@ CREATE TABLE IF NOT EXISTS quantity_measurement_entity (
     that_measurement_type VARCHAR(50),
     operation VARCHAR(20) NOT NULL,
     result_value DOUBLE,
-    result_unit VARCHAR(50),
-    result_measurement_type VARCHAR(50),
     result_string VARCHAR(255),
     is_error BOOLEAN DEFAULT FALSE,
     error_message VARCHAR(500),

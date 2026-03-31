@@ -8,7 +8,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.validation.ObjectError;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 class ErrorResponse {
@@ -88,5 +90,17 @@ public class GlobalExceptionHandler {
                 + ex.getMessage() + " for request path: " + error.path);
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
+
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+    @ExceptionHandler(ArithmeticException.class)
+    public ResponseEntity<String> handleArithmetic(ArithmeticException ex) {
+        return ResponseEntity.status(500).body("Division by zero error");
     }
 }

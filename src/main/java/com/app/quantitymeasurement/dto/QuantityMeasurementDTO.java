@@ -22,8 +22,6 @@ public class QuantityMeasurementDTO {
 	    private String operation;
 	    private String resultString;
 	    private double resultValue;
-	    private String resultUnit;
-	    private String resultMeasurementType;
 	    private String errorMessage;
 	    private boolean error;
 
@@ -36,12 +34,8 @@ public class QuantityMeasurementDTO {
 	        dto.setThatUnit(entity.getThatUnit());
 	        dto.setThatMeasurementType(entity.getThatMeasurementType());
 	        dto.setOperation(entity.getOperation());
-	        dto.setResultString(entity.getResultString());
 	        dto.setResultValue(entity.getResultValue());
-	        dto.setResultUnit(entity.getResultUnit());
-	        dto.setResultMeasurementType(entity.getResultMeasurementType());
 	        dto.setErrorMessage(entity.getErrorMessage());
-	        dto.setError(entity.isError());
 	        return dto;
 	    }
 
@@ -54,12 +48,8 @@ public class QuantityMeasurementDTO {
 	        entity.setThatUnit(this.thatUnit);
 	        entity.setThatMeasurementType(this.thatMeasurementType);
 	        entity.setOperation(this.operation);
-	        entity.setResultString(this.resultString);
 	        entity.setResultValue(this.resultValue);
-	        entity.setResultUnit(this.resultUnit);
-	        entity.setResultMeasurementType(this.resultMeasurementType);
 	        entity.setErrorMessage(this.errorMessage);
-	        entity.setError(this.error);
 	        return entity;
 	    }
 
