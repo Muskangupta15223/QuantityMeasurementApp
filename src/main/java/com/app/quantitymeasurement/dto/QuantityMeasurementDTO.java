@@ -35,6 +35,7 @@ public class QuantityMeasurementDTO {
 	        dto.setThatMeasurementType(entity.getThatMeasurementType());
 	        dto.setOperation(entity.getOperation());
 	        dto.setResultValue(entity.getResultValue());
+	        dto.setResultString(entity.getResultString());  
 	        dto.setErrorMessage(entity.getErrorMessage());
 	        return dto;
 	    }
@@ -49,6 +50,7 @@ public class QuantityMeasurementDTO {
 	        entity.setThatMeasurementType(this.thatMeasurementType);
 	        entity.setOperation(this.operation);
 	        entity.setResultValue(this.resultValue);
+	        entity.setResultString(this.resultString);
 	        entity.setErrorMessage(this.errorMessage);
 	        return entity;
 	    }

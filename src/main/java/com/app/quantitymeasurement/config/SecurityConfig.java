@@ -54,8 +54,17 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/h2-console/**",
                         "/oauth2/**",
-                        "/actuator/**"
+                        "/actuator/**",
+                        "/api/v1/quantities/compare",
+                        "/api/v1/quantities/convert",
+                        "/api/v1/quantities/add",
+                        "/api/v1/quantities/subtract",
+                        "/api/v1/quantities/divide",
+                        "/api/v1/quantities/history/**",
+                        "/api/v1/quantities/count/**"
                     ).permitAll()
+                    .requestMatchers("/api/v1/quantities/my/**").authenticated()
+                    
                     .anyRequest().authenticated()
             )
 

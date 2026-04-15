@@ -155,6 +155,10 @@ public class QuantityMeasurementController {
     @GetMapping("/my/history")
     public ResponseEntity<List<QuantityMeasurementDTO>> getMyHistory(Authentication authentication) {
         User user = getUser(authentication);
+        if(user == null) {
+        	throw new RuntimeException("Please login first");
+        }
+        System.out.println("USER: " + user);
         return ResponseEntity.ok(service.getUserHistory(user));
     }
 
@@ -164,6 +168,9 @@ public class QuantityMeasurementController {
             Authentication authentication) {
 
         User user = getUser(authentication);
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
         return ResponseEntity.ok(service.getUserHistoryByOperation(user, operation));
     }
 
@@ -173,6 +180,9 @@ public class QuantityMeasurementController {
             Authentication authentication) {
 
         User user = getUser(authentication);
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
         return ResponseEntity.ok(service.getUserHistoryByMeasurementType(user, measurementType));
     }
 
@@ -182,12 +192,18 @@ public class QuantityMeasurementController {
             Authentication authentication) {
 
         User user = getUser(authentication);
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
         return ResponseEntity.ok(service.getUserCountByOperation(user, operation));
     }
 
     @GetMapping("/my/history/errored")
     public ResponseEntity<List<QuantityMeasurementDTO>> getMyErrors(Authentication authentication) {
         User user = getUser(authentication);
+        if (user == null) {
+            throw new RuntimeException("Please login first");
+        }
         return ResponseEntity.ok(service.getUserErrorHistory(user));
     }
 }

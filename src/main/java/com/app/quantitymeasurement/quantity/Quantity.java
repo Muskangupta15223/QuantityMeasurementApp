@@ -7,7 +7,7 @@ import java.util.function.DoubleBinaryOperator;
 
 public class Quantity<U extends IMeasurable> {
 
-    private static final double EPSILON = 1e-6;
+    private static final double EPSILON = 1e-4;
 
     private final double value;
     private final U unit;
@@ -217,23 +217,20 @@ public class Quantity<U extends IMeasurable> {
         if (this == obj)
             return true;
 
-        if (obj == null)
-            return false;
-
         if (!(obj instanceof Quantity))
             return false;
 
         Quantity<?> that = (Quantity<?>) obj;
 
-        if (this.unit.getClass() != that.unit.getClass())
+        // ✅ Compare measurement type 
+        if (!this.unit.getMeasurementType().equals(that.unit.getMeasurementType()))
             return false;
 
         double thisBase = this.unit.convertToBaseUnit(this.value);
         double thatBase = that.unit.convertToBaseUnit(that.value);
-
+        
         return Math.abs(thisBase - thatBase) < EPSILON;
     }
-
     @Override
     public int hashCode() {
         double baseValue = unit.convertToBaseUnit(value);

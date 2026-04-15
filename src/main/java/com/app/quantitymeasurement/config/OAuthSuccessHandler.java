@@ -51,7 +51,6 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         String token = jwtUtil.generateToken(dbUser.getEmail());
 
-        response.setContentType("application/json");
-        response.getWriter().write("{\"token\": \"" + token + "\"}");
-    }
+        String redirectUrl = "http://localhost:3000/oauth2/redirect?token=" + token;
+        response.sendRedirect(redirectUrl);  }
 }

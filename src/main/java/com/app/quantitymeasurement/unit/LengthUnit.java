@@ -22,12 +22,14 @@ public enum LengthUnit implements IMeasurable {
     public double convertToBaseUnit(double value) {
         double result = value * conversionFactor;
         return Math.round(result * 100.0) / 100.0;
+//        return result;
     }
 
     @Override
     public double convertFromBaseUnit(double baseValue) {
         double result = baseValue / conversionFactor;
         return Math.round(result * 100.0) / 100.0;
+//        return result;
     }
 
     @Override
