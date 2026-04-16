@@ -156,19 +156,21 @@
 	<build>
 		<plugins>
 
-			<!-- Maven Compiler Plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
-			</plugin>
+		<!-- Maven Compiler Plugin -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<annotationProcessorPaths>
+					<path>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok</artifactId>
+						<version>1.18.30</version>
+					</path>
+				</annotationProcessorPaths>
+			</configuration>
+		</plugin>
+
 
 			<!-- Spring Boot Plugin -->
 			<plugin>
@@ -193,5 +195,12 @@
 
 		</plugins>
 	</build>
+
+	<!-- Profiles -->
+	<profiles>
+		<profile>
+			<id>production</id>
+		</profile>
+	</profiles>
 
 </project>
