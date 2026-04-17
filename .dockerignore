@@ -1,7 +1,6 @@
-src/
 .git/
 .gitignore
-.mvn/
+target/
 *.md
 *.log
 .DS_Store
@@ -13,7 +12,5 @@ node_modules/
 .classpath
 .project
 .factorypath
-mvnw
-mvnw.cmd
 HELP.md
 README.md
