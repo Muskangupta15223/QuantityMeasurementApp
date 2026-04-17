@@ -1,26 +1,33 @@
-# ── Build stage ──────────────────────────────────────────────────────────────
+# ── Build stage ─────────────────────────────────────────────
 FROM eclipse-temurin:17-jdk-jammy AS build
 
 WORKDIR /build
 
-# Copy Maven wrapper and project descriptor first for layer caching
-COPY mvnw mvnw.cmd ./
+# Copy Maven wrapper + config
+COPY pom.xml .
 COPY .mvn .mvn
-COPY pom.xml ./
+COPY mvnw .
 
-# Download dependencies (cached unless pom.xml changes)
+# FIX: make mvnw executable
+RUN chmod +x mvnw
+
+# Download dependencies
 RUN ./mvnw dependency:go-offline -q
 
-# Copy source and build the JAR with the production profile
+# Copy source code
 COPY src ./src
-RUN ./mvnw clean package -DskipTests -Pproduction
 
-# ── Runtime stage ─────────────────────────────────────────────────────────────
+# Build jar
+RUN ./mvnw clean package -DskipTests
+
+# ── Runtime stage ───────────────────────────────────────────
 FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
-COPY --from=build /build/target/quantity-measurement-app-0.0.1-SNAPSHOT.jar app.jar
+# safer than fixed jar name
+COPY --from=build /build/target/*.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
